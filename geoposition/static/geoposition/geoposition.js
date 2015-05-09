@@ -8,11 +8,46 @@ if (jQuery != undefined) {
 (function($) {
 
     $(document).ready(function() {
-
+        var locales = {
+            "en": {
+                "google_reference_error": "\"google\" not defined.  You might not be connected to the internet.",
+                "cookie_reference_error": "can't read django language from cookie",
+                "start_typing" : "Start typing an address …"
+            },
+            "de":{
+                "google_reference_error": "\"google\" nicht definiert. Sie sind eventuell nicht mit dem Internet verbunde.",
+                "cookie_reference_error": "Das Django Sprach-Cookie kann nicht gelesen werden.",
+                "start_typing" : "Geben Sie eine Adresse ein …"
+            },
+        };
+        
+        /** method from w3schools
+         * http://www.w3schools.com/js/js_cookies.asp
+         **/
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for(var i=0; i<ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0)==' ') c = c.substring(1);
+                if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+            }
+            return "";
+        } 
+        
+        var currentLanguage = 'en';
+        
+        try {
+            currentLanguage = getCookie('django_language');
+        } catch(ReferenceError){
+            console.log('geoposition: '+ locales[currentLanguage].cookie_reference_error);
+            return;
+        }
+        
         try {
             var _ = google;
         } catch (ReferenceError) {
-            console.log('geoposition: "google" not defined.  You might not be connected to the internet.');
+            console.log('geoposition: '+ locales[currentLanguage].google_reference_error);
             return;
         }
 
@@ -33,7 +68,7 @@ if (jQuery != undefined) {
                 $mapContainer = $('<div class="geoposition-map" />'),
                 $addressRow = $('<div class="geoposition-address" />'),
                 $searchRow = $('<div class="geoposition-search" />'),
-                $searchInput = $('<input>', {'type': 'search', 'placeholder': 'Start typing an address …'}),
+                $searchInput = $('<input>', {'type': 'search', 'placeholder': locales[currentLanguage].start_typing}),
                 $latitudeField = $container.find('input.geoposition:eq(0)'),
                 $longitudeField = $container.find('input.geoposition:eq(1)'),
                 latitude = parseFloat($latitudeField.val()) || null,
