@@ -1,3 +1,4 @@
+{% load i18n %}
 <div class="geoposition-widget" data-map-widget-height="{{ config.map_widget_height }}" data-map-options="{{ config.map_options }}" data-marker-options="{{ config.marker_options }}">
     <div class="form-row">
       <div class="field-box field-latitude">
@@ -7,6 +8,9 @@
       <div class="field-box field-longitude">
         <label class="longitude-label">{{ longitude.label|capfirst }}</label>
         {{ longitude.html }}
+      </div>
+      <div class="field-box">
+        <input type="submit" name="goto_marker" value="{% trans 'goto_marker' %}">
       </div>
     </div>
 </div>
