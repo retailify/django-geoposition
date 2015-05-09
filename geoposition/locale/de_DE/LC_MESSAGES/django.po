@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-09 08:29+0200\n"
+"POT-Creation-Date: 2015-05-09 17:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,3 +32,7 @@ msgstr "Breitengrad"
 #: forms.py:19 widgets.py:34
 msgid "longitude"
 msgstr "Längengrad"
+
+#: templates/geoposition/widgets/geoposition.html:13
+msgid "goto_marker"
+msgstr "Springe zum Marker"

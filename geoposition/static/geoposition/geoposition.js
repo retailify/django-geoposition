@@ -96,7 +96,7 @@ if (jQuery !== undefined) {
                 $searchInput = $('<input>', {'type': 'search', 'placeholder': locales[currentLanguage].start_typing}),
                 $latitudeField = $container.find('input.geoposition:eq(0)'),
                 $longitudeField = $container.find('input.geoposition:eq(1)'),
-                $gotoMarkerButton = $('<input>',{'type':' submit', 'name': 'goto-marker', 'value':locales[currentLanguage].goto_marker}),
+                $gotoMarkerButton = $container.find('input.goto-marker'), 
                 latitude = parseFloat($latitudeField.val()) || null,
                 longitude = parseFloat($longitudeField.val()) || null,
                 map,
@@ -146,7 +146,7 @@ if (jQuery !== undefined) {
                         }
                     }
                 });
-            }
+            }                
             
             function getGeocodedContent(geoResult, searchString){
                 if (geoResult.address_components.length > 0)
@@ -159,7 +159,16 @@ if (jQuery !== undefined) {
                 } else {
                     return "";
                 }
-            }                       
+            }
+            
+            function doGotoMarker() {
+                var latitude = parseFloat($latitudeField.val()) || 0;
+                var longitude = parseFloat($longitudeField.val()) || 0;
+                var center = new google.maps.LatLng(latitude, longitude);
+                map.setCenter(center);
+                map.setZoom(15);
+                marker.setPosition(center);
+            }
             
             function doGeocode() {
                 var gc = new google.maps.Geocoder();
@@ -178,7 +187,10 @@ if (jQuery !== undefined) {
                 });
             }
             
-            
+            $gotoMarkerButton.on('click', function (ev) {
+                doGotoMarker();
+                ev.preventDefault();
+            });
                                             
             if( useAddonSearch ) {
                 $container.append($mapContainer);
