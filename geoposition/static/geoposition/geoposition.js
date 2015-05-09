@@ -96,7 +96,7 @@ if (jQuery !== undefined) {
                 $searchInput = $('<input>', {'type': 'search', 'placeholder': locales[currentLanguage].start_typing}),
                 $latitudeField = $container.find('input.geoposition:eq(0)'),
                 $longitudeField = $container.find('input.geoposition:eq(1)'),
-                $gotoMarkerButton = $container.find('input.goto-marker'), 
+                $gotoMarkerButton = $container.find('input[name="goto-marker"]'), 
                 latitude = parseFloat($latitudeField.val()) || null,
                 longitude = parseFloat($longitudeField.val()) || null,
                 map,
@@ -186,8 +186,9 @@ if (jQuery !== undefined) {
                     }
                 });
             }
+                        
             
-            $gotoMarkerButton.on('click', function (ev) {
+            $gotoMarkerButton.on('click', function (ev) {                                
                 doGotoMarker();
                 ev.preventDefault();
             });
