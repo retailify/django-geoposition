@@ -265,13 +265,8 @@ if (jQuery !== undefined) {
                 google.maps.event.trigger(marker, 'dragend');
             }
 
-            $latitudeField.add($longitudeField).on('keyup', function(e) {
-                var latitude = parseFloat($latitudeField.val()) || 0;
-                var longitude = parseFloat($longitudeField.val()) || 0;
-                var center = new google.maps.LatLng(latitude, longitude);
-                map.setCenter(center);
-                map.setZoom(15);
-                marker.setPosition(center);
+            $latitudeField.add($longitudeField).on('keyup', function(e) {                
+                doGotoMarker();
                 doGeocode();
             });
         });
