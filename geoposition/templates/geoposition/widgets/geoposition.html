@@ -1,4 +1,15 @@
 <div class="geoposition-widget" data-map-widget-height="{{ config.map_widget_height }}" data-map-options="{{ config.map_options }}" data-marker-options="{{ config.marker_options }}">
+    <div class="form-row" >
+      <div class="field-box field-latitude">
+        <label class="geo-latitude">{{ latitude.label|capfirst }}</label>
+        {{ latitude.html }}
+      </div>
+      <div class="field-box field-longitude">
+        <label class="geo-longitude">{{ longitude.label|capfirst }}</label>
+        {{ longitude.html }}
+      </div>
+    </div>
+<!--    
     <table>
         <tr>
             <td>{{ latitude.label|capfirst }}</td>
@@ -9,4 +20,5 @@
             <td>{{ longitude.html }}</td>
         </tr>
     </table>
+-->    
 </div>
