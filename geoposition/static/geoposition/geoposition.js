@@ -8,6 +8,9 @@ if (jQuery != undefined) {
 (function($) {
 
     $(document).ready(function() {
+        var defaultLanguage = 'en',
+            currentLanguage = 'en';
+            
         var locales = {
             "en": {
                 "google_reference_error": "\"google\" not defined.  You might not be connected to the internet.",
@@ -15,13 +18,14 @@ if (jQuery != undefined) {
                 "start_typing" : "Start typing an address …"
             },
             "de":{
-                "google_reference_error": "\"google\" nicht definiert. Sie sind eventuell nicht mit dem Internet verbunde.",
+                "google_reference_error": "\"google\" nicht definiert. Sie sind eventuell nicht mit dem Internet verbunden.",
                 "cookie_reference_error": "Das Django Sprach-Cookie kann nicht gelesen werden.",
                 "start_typing" : "Geben Sie eine Adresse ein …"
             },
         };
         
-        /** method from w3schools
+        /** 
+         * method from w3schools 
          * http://www.w3schools.com/js/js_cookies.asp
          **/
         function getCookie(cname) {
@@ -34,14 +38,15 @@ if (jQuery != undefined) {
             }
             return "";
         } 
-        
-        var currentLanguage = 'en';
-        
+
         try {
             currentLanguage = getCookie('django_language');
+            if (locales[currentLanguage] === null){
+                currentLanguage = defaultLanguage;
+            }
         } catch(ReferenceError){
             console.log('geoposition: '+ locales[currentLanguage].cookie_reference_error);
-            return;
+            currentLanguage = defaultLanguage;
         }
         
         try {
