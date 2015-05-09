@@ -1,27 +1,29 @@
-if (jQuery != undefined) {
+if (jQuery !== undefined) {
     var django = {
-        'jQuery': jQuery,
-    }
+        'jQuery': jQuery
+    };
 }
 
 
-(function($) {
-
-    $(document).ready(function() {
+(function ($) {
+    'use strict';
+    
+    $(document).ready(function () {
         var defaultLanguage = 'en',
-            currentLanguage = 'en';
-            
-        var locales = {
+            currentLanguage = 'en',
+            locales = {
             "en": {
                 "google_reference_error": "\"google\" not defined.  You might not be connected to the internet.",
                 "cookie_reference_error": "can't read django language from cookie",
-                "start_typing" : "Start typing an address …"
+                "start_typing" : "Start typing an address …",
+                "goto_marker" : "Goto Marker Position"
             },
             "de":{
                 "google_reference_error": "\"google\" nicht definiert. Sie sind eventuell nicht mit dem Internet verbunden.",
                 "cookie_reference_error": "Das Django Sprach-Cookie kann nicht gelesen werden.",
-                "start_typing" : "Geben Sie eine Adresse ein …"
-            },
+                "start_typing" : "Geben Sie eine Adresse ein …",
+                "goto_marker" : "Springe zum Marker"
+            }
         };
         
         /** 
@@ -29,12 +31,13 @@ if (jQuery != undefined) {
          * http://www.w3schools.com/js/js_cookies.asp
          **/
         function getCookie(cname) {
-            var name = cname + "=";
-            var ca = document.cookie.split(';');
-            for(var i=0; i<ca.length; i++) {
+            var name = cname + "=",
+                ca = document.cookie.split(';'),
+                i = 0;
+            for (i; i < ca.length; i++) {
                 var c = ca[i];
-                while (c.charAt(0)==' ') c = c.substring(1);
-                if (c.indexOf(name) == 0) return c.substring(name.length,c.length);
+                while (c.charAt(0) === ' ') c = c.substring(1);
+                if (c.indexOf(name) === 0) return c.substring(name.length,c.length);
             }
             return "";
         } 
@@ -44,7 +47,7 @@ if (jQuery != undefined) {
             if (locales[currentLanguage] === null){
                 currentLanguage = defaultLanguage;
             }
-        } catch(ReferenceError){
+        } catch (ReferenceError){
             console.log('geoposition: '+ locales[currentLanguage].cookie_reference_error);
             currentLanguage = defaultLanguage;
         }
@@ -55,7 +58,24 @@ if (jQuery != undefined) {
             console.log('geoposition: '+ locales[currentLanguage].google_reference_error);
             return;
         }
-
+        
+        var useAddonSearch = false,
+            city_selectbox = false,
+            city_selectbox_selector='select#id_city',
+            street_selector = '#id_street',
+            street_number_selector = '#id_street_number';
+        
+        // check additions
+        if ($('#id_city').length && $(street_selector).length && $(street_number_selector).length){
+            console.log("useAddonSearch");
+            useAddonSearch = true;
+        }
+        
+        if (useAddonSearch && $(city_selectbox_selector).length) {
+            console.log("selectbox found");
+            city_selectbox = true;
+        }
+        
         var mapDefaults = {
             'mapTypeId': google.maps.MapTypeId.ROADMAP,
             'scrollwheel': false,
@@ -76,6 +96,7 @@ if (jQuery != undefined) {
                 $searchInput = $('<input>', {'type': 'search', 'placeholder': locales[currentLanguage].start_typing}),
                 $latitudeField = $container.find('input.geoposition:eq(0)'),
                 $longitudeField = $container.find('input.geoposition:eq(1)'),
+                $gotoMarkerButton = $('<input>',{'type':' submit', 'name': 'goto-marker', 'value':locales[currentLanguage].goto_marker}),
                 latitude = parseFloat($latitudeField.val()) || null,
                 longitude = parseFloat($longitudeField.val()) || null,
                 map,
@@ -85,16 +106,17 @@ if (jQuery != undefined) {
                 markerOptions,
                 markerCustomOptions,
                 marker;
-
+            
             $mapContainer.css('height', $container.data('map-widget-height') + 'px');
             mapCustomOptions = $container.data('map-options') || {};
             markerCustomOptions = $container.data('marker-options') || {};
 
-            function doSearch() {
+            function doSearch(searchInput) {
+                console.log(searchInput);
                 var gc = new google.maps.Geocoder();
                 $searchInput.parent().find('ul.geoposition-results').remove();
                 gc.geocode({
-                    'address': $searchInput.val()
+                    'address': searchInput
                 }, function(results, status) {
                     if (status == 'OK') {
                         var updatePosition = function(result) {
@@ -125,42 +147,79 @@ if (jQuery != undefined) {
                     }
                 });
             }
-
+            
+            function getGeocodedContent(geoResult, searchString){
+                if (geoResult.address_components.length > 0)
+                {
+                    for (var i in geoResult.address_components) {                        
+                        if (geoResult.address_components[i].types[0] === searchString) {
+                            return geoResult.address_components[i].long_name;
+                        }
+                    }   
+                } else {
+                    return "";
+                }
+            }                       
+            
             function doGeocode() {
                 var gc = new google.maps.Geocoder();
                 gc.geocode({
                     'latLng': marker.position
                 }, function(results, status) {
                     $addressRow.text('');
-                    if (results && results[0]) {
-                        $addressRow.text(results[0].formatted_address);
+                    if (results && results[0]) {                                                
+                        if ( useAddonSearch ) {
+                            $(street_selector).val(getGeocodedContent(results[0], 'route'));
+                            $(street_number_selector).val(getGeocodedContent(results[0], 'street_number'));                            
+                        } else {
+                            $addressRow.text(results[0].formatted_address);
+                        }
                     }
                 });
             }
+            
+            
+                                            
+            if( useAddonSearch ) {
+                $container.append($mapContainer);
+                var timer = null;
+                if (city_selectbox) {
+                    var searchString = '';
+                    $(city_selectbox_selector).change(function () {
+                        $(street_selector).val('');
+                        $(street_number_selector).val('');
+                        searchString = $(this).find("option:selected").text();                        
+                        doSearch(searchString);
+                    });
+                    
+                    //$(street_selector).on('keydown', searchCallbackFunction(timer,event));
+                    
+                }
+            } else {
+                var autoSuggestTimer = null;
+                $searchInput.on('keydown', function(e) {
+                    if (autoSuggestTimer) {
+                        clearTimeout(autoSuggestTimer);
+                        autoSuggestTimer = null;
+                    }
 
-            var autoSuggestTimer = null;
-            $searchInput.on('keydown', function(e) {
-                if (autoSuggestTimer) {
-                    clearTimeout(autoSuggestTimer);
-                    autoSuggestTimer = null;
-                }
-
-                // if enter, search immediately
-                if (e.keyCode == 13) {
-                    e.preventDefault();
-                    doSearch();
-                }
-                else {
-                    // otherwise, search after a while after typing ends
-                    autoSuggestTimer = setTimeout(function(){
-                        doSearch();
-                    }, 1000);
-                }
-            }).on('abort', function() {
-                $(this).parent().find('ul.geoposition-results').remove();
-            });
-            $searchInput.appendTo($searchRow);
-            $container.append($searchRow, $mapContainer, $addressRow);
+                    // if enter, search immediately
+                    if (e.keyCode == 13) {
+                        e.preventDefault();
+                        doSearch($searchInput.val());
+                    }
+                    else {
+                        // otherwise, search after a while after typing ends
+                        autoSuggestTimer = setTimeout(function(){
+                            doSearch($searchInput.val());
+                        }, 1000);
+                    }
+                }).on('abort', function() {
+                    $(this).parent().find('ul.geoposition-results').remove();
+                });
+                $container.append($searchRow, $mapContainer, $addressRow);
+                $searchInput.appendTo($searchRow);
+            }
 
             mapLatLng = new google.maps.LatLng(latitude, longitude);
 
