@@ -27,7 +27,7 @@ msgstr "Geben Sie eine gültige Geo-Position ein."
 
 #: forms.py:18 widgets.py:30
 msgid "latitude"
-msgstr "Breitengrade"
+msgstr "Breitengrad"
 
 #: forms.py:19 widgets.py:34
 msgid "longitude"
