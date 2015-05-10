@@ -16,13 +16,13 @@ if (jQuery !== undefined) {
                 "google_reference_error": "\"google\" not defined.  You might not be connected to the internet.",
                 "cookie_reference_error": "can't read django language from cookie",
                 "start_typing" : "Start typing an address …",
-                "goto_marker" : "Goto Marker Position"
+                "set_city_street_location_action" : "Set position to city, street"
             },
             "de":{
                 "google_reference_error": "\"google\" nicht definiert. Sie sind eventuell nicht mit dem Internet verbunden.",
                 "cookie_reference_error": "Das Django Sprach-Cookie kann nicht gelesen werden.",
                 "start_typing" : "Geben Sie eine Adresse ein …",
-                "goto_marker" : "Springe zum Marker"
+                "set_city_street_location_action" : "Setze Position auf Stadt, Straße"
             }
         };
         
@@ -67,12 +67,10 @@ if (jQuery !== undefined) {
         
         // check additions
         if ($('#id_city').length && $(street_selector).length && $(street_number_selector).length){
-            console.log("useAddonSearch");
             useAddonSearch = true;
         }
         
         if (useAddonSearch && $(city_selectbox_selector).length) {
-            console.log("selectbox found");
             city_selectbox = true;
         }
         
@@ -96,7 +94,9 @@ if (jQuery !== undefined) {
                 $searchInput = $('<input>', {'type': 'search', 'placeholder': locales[currentLanguage].start_typing}),
                 $latitudeField = $container.find('input.geoposition:eq(0)'),
                 $longitudeField = $container.find('input.geoposition:eq(1)'),
-                $gotoMarkerButton = $container.find('input[name="goto-marker"]'), 
+                $gotoMarkerButton = $container.find('input[name="goto-marker"]'),
+                $locationContainer = $('<div class="field-box" />'),
+                $setCityStreetNumberLocationButton = $('<input>',{'type': 'submit', 'name':'set-city-location', 'value':locales[currentLanguage].set_city_street_location_action}),
                 latitude = parseFloat($latitudeField.val()) || null,
                 longitude = parseFloat($longitudeField.val()) || null,
                 map,
@@ -112,7 +112,6 @@ if (jQuery !== undefined) {
             markerCustomOptions = $container.data('marker-options') || {};
 
             function doSearch(searchInput) {
-                console.log(searchInput);
                 var gc = new google.maps.Geocoder();
                 $searchInput.parent().find('ul.geoposition-results').remove();
                 gc.geocode({
@@ -194,20 +193,30 @@ if (jQuery !== undefined) {
             });
                                             
             if( useAddonSearch ) {
+                $('.field-street_number').after($locationContainer);
+                $locationContainer.append($setCityStreetNumberLocationButton);
                 $container.append($mapContainer);
-                var timer = null;
+                                
                 if (city_selectbox) {
                     var searchString = '';
                     $(city_selectbox_selector).change(function () {
                         $(street_selector).val('');
                         $(street_number_selector).val('');
-                        searchString = $(this).find("option:selected").text();                        
+                        searchString = $(this).find('option:selected').text();                        
                         doSearch(searchString);
-                    });
-                    
-                    //$(street_selector).on('keydown', searchCallbackFunction(timer,event));
-                    
+                    });                                                            
                 }
+                
+                $setCityStreetNumberLocationButton.click( function (ev) {
+                    var searchString='';
+                    if(city_selectbox) {
+                        searchString = $(city_selectbox_selector).find('option:selected').text();
+                    }
+                    var street_with_number = $(street_selector).val() + ' ' +$(street_number_selector).val();                    
+                    doSearch(searchString+', '+street_with_number);
+                    ev.preventDefault();
+                });
+                
             } else {
                 var autoSuggestTimer = null;
                 $searchInput.on('keydown', function(e) {
